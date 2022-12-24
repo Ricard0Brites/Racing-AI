@@ -475,3 +475,11 @@ DerivedDataCache/*
 enc_temp_folder/
 
 Content/VehicleTemplate/
+
+Content/__ExternalActors__/
+
+Content/__ExternalObjects__/
+
+Content/LevelPrototyping/
+
+Content/Vehicles/
