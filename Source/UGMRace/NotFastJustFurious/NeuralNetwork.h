@@ -4,17 +4,7 @@
 #include "CoreMinimal.h"
 #include "NeuralNetwork.generated.h"
 
-#define INPUTAMOUNT 13
-#define OUTPUTAMOUNT 3
-
-#define	NEURONAMOUNT 9
-#define HIDDENLAYERAMOUNT 3
-
-#define TWEAKINGSTEP 0.1f
-
-#define MAXRNGRANGE 20
-#define RANDINRANGE(x) (rand() % (( x + 1 )));
-
+#define RANDINRANGE(x) (rand() % (( x)) + 1)
 #define ACTIVATIONFUNCTION(x) class UGameplayStatics::Max(0.01f * x, x) //leaky ReLU
 
 UENUM( BlueprintType )
@@ -35,61 +25,82 @@ enum ELinecastDirections
 	bottomLeft30
 };
 
-UCLASS(BlueprintType, Blueprintable)
-class UGMRACE_API UNeuralNetwork : public UObject
+UCLASS( BlueprintType, Blueprintable)
+class UGMRACE_API ANeuralNetwork : public AActor
 {
-	 GENERATED_BODY()
+	GENERATED_BODY()
 
 public:
-	UNeuralNetwork();
-	~UNeuralNetwork();
+	ANeuralNetwork();
 
-	FNeuralLayer* InputLayer;
-	FNeuralLayer* HiddenLayers[HIDDENLAYERAMOUNT];
-	FNeuralLayer* OutputLayer;
+
+	virtual void Tick(float DeltaSeconds) override;
+
+	UFUNCTION( BlueprintCallable, Category = "Neural Network")
+	void CreateNetwork(uint8 InputLayerNeuronAmount, uint8 HiddenLayerAmount, uint8 HiddenLayerNeuronAmount, uint8 OutputLayerNeuronAmount);
+	
+	TArray<FNeuralLayer*> NeuralLayers;
 };
 
-USTRUCT()
-struct FNeuralLayer
- {
+USTRUCT(BlueprintType)
+struct UGMRACE_API FNeuralLayer
+{
+	GENERATED_BODY()
+
+	FNeuralLayer() { }
+	FNeuralLayer(ANeuralNetwork* ParentNeuralNetwork) { _ParentNetwork = ParentNeuralNetwork; }
+
+	void InitLayer(int NumberOfNeurons);
+
+	void CreateConnections();
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	int LayerIndex;
 	
+	TArray<FNeuron*> _Neurons;
+	ANeuralNetwork* _ParentNetwork;
+};
+
+USTRUCT(BlueprintType)
+struct UGMRACE_API FConnection
+{
+
 	GENERATED_BODY()
-	
-	//this constructor uses the predefined macro value for the amount of neurons to create
-	FNeuralLayer();
-	~FNeuralLayer();
+		FConnection() {  }
 
-	void Init(FNeuralLayer* PreviousLayer, FNeuralLayer* NextLayer, int NeuronAmount);
+public:
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		TArray<int> NeuronToTheLeftIndex;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		int MyIndex;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		TArray<int> NeuronToTheRightIndex;
 
-	FNeuralLayer *PreviousLayerRef, *NextLayerRef;
-	TArray<FNeuron*> Neurons;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		TArray<float> LeftConnectionWeight;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		TArray<float> RightConnectionWeight;
+};
 
+USTRUCT(BlueprintType)
+struct UGMRACE_API FNeuron
+{
 
- };
-
-USTRUCT()
-struct FNeuron
- {
-	GENERATED_BODY()
-
-	 FNeuron();
-	 ~FNeuron();
-
-	 void Init(bool UseRandNeuronValues, int MaxRandRange);
-	 void Init(bool UseRandNeuronValues);
-
-	 float NeuronValue;
- };
- 
-USTRUCT()
-struct FNeuronConnection
- {
 	GENERATED_BODY()
 
-	FNeuronConnection();
-	~FNeuronConnection();
+	FNeuron() {}
+	FNeuron(int NewLayerIndex, int NewNeuronIndex, float NewNeuronValue, ANeuralNetwork* NewParentNetwork);
 
-	FNeuron *OriginNeuron, *TargetNeuron;
+	void SetConnections();
 
-	float Weight = 1;
- };
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	int LayerIndex;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	int NeuronIndex;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	float NeuronValue;
+
+	FConnection NeuronConnection;
+
+	ANeuralNetwork* ParentNetwork;
+};
