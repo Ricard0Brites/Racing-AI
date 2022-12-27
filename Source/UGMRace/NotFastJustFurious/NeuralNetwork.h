@@ -2,10 +2,14 @@
 
 #pragma once
 #include "CoreMinimal.h"
+#include "Kismet/GameplayStatics.h"
 #include "NeuralNetwork.generated.h"
 
-#define RANDINRANGE(x) (rand() % (( x)) + 1)
-#define ACTIVATIONFUNCTION(x) class UGameplayStatics::Max(0.01f * x, x) //leaky ReLU
+#define RANDINRANGE(x) (rand() % ((x)) + 1)
+#define ACTIVATIONFUNCTION(x) std::max(0.01f * x, x) //leaky ReLU
+#define SIGMOID(x)
+#define BIAS 5
+#define WEIGHTVALRANGE 10
 
 UENUM( BlueprintType )
 enum ELinecastDirections
@@ -25,7 +29,7 @@ enum ELinecastDirections
 	bottomLeft30
 };
 
-UCLASS( BlueprintType, Blueprintable)
+UCLASS( BlueprintType, Blueprintable )
 class UGMRACE_API ANeuralNetwork : public AActor
 {
 	GENERATED_BODY()
@@ -33,12 +37,18 @@ class UGMRACE_API ANeuralNetwork : public AActor
 public:
 	ANeuralNetwork();
 
-
-	virtual void Tick(float DeltaSeconds) override;
-
 	UFUNCTION( BlueprintCallable, Category = "Neural Network")
 	void CreateNetwork(uint8 InputLayerNeuronAmount, uint8 HiddenLayerAmount, uint8 HiddenLayerNeuronAmount, uint8 OutputLayerNeuronAmount);
+
+	UFUNCTION(BlueprintCallable, Category = "Neural Network")
+	void UpdateNetwork(TArray<float> NewData);
+
+	/*UFUNCTION(BlueprintCallable, Category = "Neural Network")
+	void TriggerPositiveAction();
 	
+	UFUNCTION(BlueprintCallable, Category = "Neural Network")
+	void TriggerNegativeAction();*/
+
 	TArray<FNeuralLayer*> NeuralLayers;
 };
 
@@ -53,6 +63,7 @@ struct UGMRACE_API FNeuralLayer
 	void InitLayer(int NumberOfNeurons);
 
 	void CreateConnections();
+	void TriggerCalculations();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	int LayerIndex;
@@ -92,6 +103,7 @@ struct UGMRACE_API FNeuron
 	FNeuron(int NewLayerIndex, int NewNeuronIndex, float NewNeuronValue, ANeuralNetwork* NewParentNetwork);
 
 	void SetConnections();
+	void Calculate();
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	int LayerIndex;
@@ -99,6 +111,8 @@ struct UGMRACE_API FNeuron
 	int NeuronIndex;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	float NeuronValue;
+
+	TArray<float> IncomingValues;
 
 	FConnection NeuronConnection;
 
