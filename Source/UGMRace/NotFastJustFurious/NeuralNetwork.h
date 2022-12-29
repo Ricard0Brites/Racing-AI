@@ -33,7 +33,7 @@ UCLASS( BlueprintType, Blueprintable )
 class UGMRACE_API ANeuralNetwork : public AActor
 {
 	GENERATED_BODY()
-	  //
+
 public:
 	ANeuralNetwork();
 
