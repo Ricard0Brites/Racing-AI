@@ -11,5 +11,7 @@ public class UGMRaceEditorTarget : TargetRules
 		DefaultBuildSettings = BuildSettingsVersion.V2;
 
 		ExtraModuleNames.AddRange( new string[] { "UGMRace" } );
-	}
+        
+		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_1;
+    }
 }
